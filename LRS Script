@@ -1,0 +1,96 @@
+#script for LRS pipeline
+#bin/bash
+#paths
+
+#Step 1:Quality check
+echo "Nanoplot is running..."
+/home/nayeema/miniconda3/envs/bio_env39/bin/NanoPlot --fastq /home/nayeema/LRS/sample/ERR14709210.fastq --outdir /home/nayeema/LRS/results
+
+#Step 2:filtering low quality reads
+echo "filtering low quality reads using filtlong..."
+/home/nayeema/miniconda3/envs/bio_env39/bin/filtlong --min_length 100 /home/nayeema/LRS/sample/ERR14709210.fastq > /home/nayeema/LRS/results/ERR14709210_filtered.fastq
+
+
+#step :3
+#Alignment to hg38.fa using minimap2 completed using galaxy server
+
+#step :4
+#variant calling using bcftools,clair3,cuteSV,Sniffles completed using galaxy server
+
+#Step:5 - consensus calling
+#count of bcftool varaints
+awk '!/^#/' bcftools_variants.vcf | wc -l
+
+#count of cutesv variants
+awk '!/^#/' cutesv_variants.vcf | wc -l
+
+#count of sniffles variants
+awk '!/^#/' sniffles_variants.vcf | wc -l
+
+#Comparing variant positions present in clair_variants and bcftools_variants
+bcftools view -H /home/nayeema/LRS/SAMPLE1/results/bcftools_variants.vcf | awk 'NR == FNR {a[$1 $2]; next} $1 $2 in a' - <(bcftools view -H /home/nayeema/LRS/SAMPLE1/results/clair3_variants.vcf_bgzip) > clairbcf.vcf
+echo "Number of chr loci same between clair and bcftools is..:"
+awk '!/^#/' clairbcf.vcf | wc -l
+
+#identifying common ALT alleles present in both bcftools_variants and clairbcf.vcf
+awk 'NR == FNR {a[$5]; next} $5 in a' /home/nayeema/LRS/SAMPLE1/results/bcftools_variants.vcf clairbcf.vcf > consensus_bcfclr.vcf
+
+#counting common ALT positions
+echo 'Number of common alt positions shared is: '
+awk '!/^#/' consensus_bcfclr.vcf | wc -l
+
+#identifying common variants by position in cutesv_variants and consensus_bcfclr variants
+awk 'NR == FNR {a[$1 $2]; next} $1 $2 in a' /home/nayeema/LRS/SAMPLE1/results/cutesv_variants.vcf /home/nayeema/LRS/SAMPLE1/results/consensus_bcfclr.vcf > var.vcf
+#counting common variants
+awk '!/^#/' var.vcf | wc -l
+
+#find variants with the same ALT allele ($5) that are present in both cutesv_variants.vcf and var.vcf, and count them.
+awk 'NR == FNR {a[$5]; next} $5 in a' /home/nayeema/LRS/SAMPLE1/results/cutesv_variants.vcf var.vcf > consensus_bcfclrcute.vcf
+#Counting Common ALT Positions
+echo 'Number of common alt positions shared is: '
+awk '!/^#/' consensus_bcfclrcute.vcf | wc -l
+
+#Step:6 - Finding bcf_tools variants that overlap with clinvar annotations
+bedtools intersect -wa -wb -a bcftools_variants_no_chr.bed -b clinvar_20250323.bed > variant_clinvar_overlap.bed
+
+#classifying variants by their clinical significance
+awk '{
+    if ($9 == "Pathogenic") pathogenic++;
+    else if ($9 == "Likely_pathogenic") likely_pathogenic++;
+    else if ($9 == "Benign") benign++;
+    else if ($9 == "Likely_benign") likely_benign++;
+    else if ($9 == "Uncertain_significance") vus++;
+}
+END {
+    print "Pathogenic: " pathogenic;
+    print "Likely Pathogenic: " likely_pathogenic;
+    print "Benign: " benign;
+    print "Likely Benign: " likely_benign;
+    print "Uncertain Significance (VUS): " vus;
+}' variant_clinvar_overlap.bed
+
+#Step:7 -  finding clair3 variants that overlap with clinvar annotations
+bedtools intersect -wa -wb -a clair_variants_no_chr.bed -b clinvar_20250323.bed > clair_clinvar_overlap.bed
+
+#classifying variants by their clinical significance
+awk '{
+>     if ($9 == "Pathogenic") pathogenic++;
+>     else if ($9 == "Likely_pathogenic") likely_pathogenic++;
+>     else if ($9 == "Benign") benign++;
+>     else if ($9 == "Likely_benign") likely_benign++;
+>     else if ($9 == "Uncertain_significance") vus++;
+> }
+> END {
+>     print "Pathogenic: " pathogenic;
+>     print "Likely Pathogenic: " likely_pathogenic;
+>     print "Benign: " benign;
+>     print "Likely Benign: " likely_benign;
+>     print "Uncertain Significance (VUS): " vus;
+}' clair_clinvar_overlap.bed
+
+
+#Step :8 - finding bcftools_variants that overlap with dbvar annotations
+bedtools intersect -a dbVar.bed -b bcftools_variants_no_chr.bed > dbvar_bcftools_overlap.bed
+
+#Step:9 - Finding clair_variants that overlap with dbvar annotations
+bedtools intersect -a dbVar.bed -b clair_variants_no_chr.bed > dbvar_clair_overlap.bed
