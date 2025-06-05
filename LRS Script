@@ -49,7 +49,7 @@
 #echo " Cutesv completed.."
 
 echo "variant calling using bcftools.."
-# Generate BCF (binary variant call format)
+# Generate BCF 
 bcftools mpileup --threads 4 -Ou -f /home/nayeema/LRS/hg38/hg38.fa /home/nayeema/LRS/aligned_reads/ERR3279035_sorted.bam | \
 bcftools call --threads 4 -mv -Ob -o /home/nayeema/LRS/variants/ERR3279035.bcf
 
@@ -77,7 +77,7 @@ bash /home/nayeema/LRS/tools/clair3/run_clair3.sh \
     --ref_fn /home/nayeema/LRS/hg38/hg38.fa \
     --threads 4 \
     --platform ont \
-    --model_path ~/clair3_models/ont \
+    --model_path ~//home/nayeema/LRS/tools/clair3/models/ont \
     --output /home/nayeema/LRS/variants/clair3_output
 echo "Clair3 variant calling completed."
 
