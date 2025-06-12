@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: ./QC_filt.sh
+# Usage: ./qc_filtered.sh
 
 SAMPLE="SRR23082033"
 RESULTDIR="/home/nayeema/LRS2/results"
