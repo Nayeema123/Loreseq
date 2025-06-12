@@ -1,0 +1,40 @@
+#Install miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+# Follow the prompts to install
+
+# Create conda env
+conda create -n lrs_env python=3.10 -y
+
+# Activate environment
+conda activate lrs_env
+
+# Install core tools
+conda install -c bioconda nanoplot filtlong minimap2 samtools bcftools longshot sniffles cuteSV -y
+
+# Clair3 is not available in conda, so clone manually
+# make sure channels are added in conda
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+
+# create conda environment named "clair3"
+conda create -n clair3 -c bioconda clair3 python=3.9.0 -y
+conda activate clair3
+
+# make sep directory for clair3 output
+mkdir clair3_output
+
+echo "Variant calling with clair3 started..."
+## Define model name
+MODEL_NAME="r1041_e82_400bps_sup_v500"
+
+./run_clair3.sh \
+  --bam_fn=/home/nayeema/LRS/aligned_reads/SRR23082033_sorted.bam \
+  --ref_fn=/home/nayeema/LRS/hg38/hg38.fa \
+  --threads=8 \
+  --platform=ont \
+  --model_path=/home/nayeema/Clair3/models/${MODEL_NAME} \
+  --output=/home/nayeema/LRS/clair3_output
+
+echo "Variant calling with Clair3 completed..."
