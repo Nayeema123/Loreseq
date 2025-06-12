@@ -2,7 +2,7 @@
 #!/bin/bash
 conda activate 
 conda activate lrs_env
-# Usage: ./QC.sh
+# Usage: ./qc.sh
 
 SAMPLE="SRR23082033"
 DATADIR="/home/nayeema/LRS/data"
