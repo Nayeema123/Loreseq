@@ -12,19 +12,22 @@ conda activate lrs_env
 # Install core tools
 conda install -c bioconda nanoplot filtlong minimap2 samtools bcftools longshot sniffles cuteSV -y
 
-# Clair3 is not available in conda, so clone manually
+================================================================================================================================================
+
+#Clair3
 # make sure channels are added in conda
 conda config --add channels defaults
 conda config --add channels bioconda
 conda config --add channels conda-forge
 
-# create conda environment named "clair3"
+# create sep conda environment named "clair3"
 conda create -n clair3 -c bioconda clair3 python=3.9.0 -y
 conda activate clair3
-
+# Pre-trained models are already included in the bioconda package.
 # make sep directory for clair3 output
 mkdir clair3_output
 
+==================================================================================================================================================
 #make sep directory for hg38
 mkdir hg38
 
