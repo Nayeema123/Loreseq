@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Usage: ./Alignment.sh
+# Usage: ./alignment.sh
 
 SAMPLE="SRR23082033"
-REF="/home/nayeema/LRS/hg38/hg38.mmi"
+REF="/home/nayeema/LRS/hg38/hg38.mmi"  #It's mandatory for minimap2 to have the .mmi index file when aligning reads.
 RESULTDIR="/home/nayeema/LRS2/results"
 ALIGNDIR="/home/nayeema/LRS2/aligned_reads"
 
