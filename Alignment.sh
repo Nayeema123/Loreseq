@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: ./alignment.sh
+# Usage: ./Alignment.sh
 
 SAMPLE="SRR23082033"
 REF="/home/nayeema/LRS/hg38/hg38.mmi"
