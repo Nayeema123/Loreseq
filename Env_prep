@@ -25,16 +25,18 @@ conda activate clair3
 # make sep directory for clair3 output
 mkdir clair3_output
 
-echo "Variant calling with clair3 started..."
-## Define model name
-MODEL_NAME="r1041_e82_400bps_sup_v500"
+#make sep directory for hg38
+mkdir hg38
 
-./run_clair3.sh \
-  --bam_fn=/home/nayeema/LRS/aligned_reads/SRR23082033_sorted.bam \
-  --ref_fn=/home/nayeema/LRS/hg38/hg38.fa \
-  --threads=8 \
-  --platform=ont \
-  --model_path=/home/nayeema/Clair3/models/${MODEL_NAME} \
-  --output=/home/nayeema/LRS/clair3_output
+# Download
+wget http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz
 
-echo "Variant calling with Clair3 completed..."
+# Unzip
+gunzip hg38.fa.gz
+
+# Index fasta for samtools (creates hg38.fa.fai)
+samtools faidx hg38.fa
+
+# Create minimap2 index (creates hg38.mmi)
+minimap2 -d hg38.mmi hg38.fa
+
